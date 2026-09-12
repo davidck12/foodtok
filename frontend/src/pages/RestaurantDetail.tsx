@@ -6,9 +6,8 @@ import { api, uploadImage } from "../api/client";
 import { RestaurantMap } from "../components/RestaurantMap";
 import { StarRating } from "../components/StarRating";
 import { useAuth } from "../context/AuthContext";
+import { priceSymbol } from "../lib/price";
 import type { RestaurantDetail as RestaurantDetailType } from "../types";
-
-const PRICE_LABELS = ["", "$", "$$", "$$$", "$$$$"];
 
 export function RestaurantDetail() {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +59,13 @@ export function RestaurantDetail() {
         <div>
           <h1 className="text-2xl font-bold text-neutral-900">{restaurant.name}</h1>
           <p className="mt-1 text-neutral-500">
-            {restaurant.cuisine} · {restaurant.address}, {restaurant.city} · {PRICE_LABELS[restaurant.priceRange]}
+            {restaurant.cuisine} · {restaurant.address}, {restaurant.city}
+            {restaurant.priceRange > 0 && (
+              <>
+                {" "}
+                · {priceSymbol(restaurant.priceRange)} (~${restaurant.priceRange}/person)
+              </>
+            )}
           </p>
           {restaurant.description && <p className="mt-3 text-neutral-700">{restaurant.description}</p>}
           <div className="mt-4 flex items-center gap-2">

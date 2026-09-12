@@ -29,7 +29,8 @@ model Restaurant {
   city        String
   lat         Float
   lng         Float
-  priceRange  Int      @default(2)
+  // Average price per person (0 = unknown). Bucketed into $–$$$$ for display.
+  priceRange  Int      @default(0)
   coverImage  String?
   createdById String?
   createdBy   User?    @relation("RestaurantOwner", fields: [createdById], references: [id])

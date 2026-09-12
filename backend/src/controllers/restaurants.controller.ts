@@ -50,7 +50,7 @@ function mapGoogleSummary(place: Awaited<ReturnType<typeof searchGooglePlaces>>[
     city: place.address,
     lat: place.lat,
     lng: place.lng,
-    priceRange: 2,
+    priceRange: 0, // unknown until Google's priceLevel is wired in, or a Foodtok user edits it
     coverImage: null,
     createdAt: new Date().toISOString(),
     avgRating: place.rating,
@@ -82,6 +82,7 @@ export async function getRestaurant(req: Request, res: Response) {
           city: details.address,
           lat: details.lat,
           lng: details.lng,
+          priceRange: 0, // unknown — Foodtok users can edit this in once we add that flow
           googlePlaceId: details.placeId,
           googleRating: details.rating,
           googleReviewCount: details.reviewCount,
@@ -140,7 +141,8 @@ const createRestaurantSchema = z.object({
   city: z.string().min(1).max(100),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
-  priceRange: z.number().int().min(1).max(4).optional(),
+  // Average price per person, in the creator's local currency (treated as USD for display bucketing).
+  priceRange: z.number().int().min(1).max(1000).optional(),
   coverImage: z.string().url().optional().or(z.literal("")),
 });
 

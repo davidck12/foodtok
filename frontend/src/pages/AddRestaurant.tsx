@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api, uploadImage } from "../api/client";
 import { LocationPicker } from "../components/LocationPicker";
-
-const LISBON: [number, number] = [38.7223, -9.1393];
+import { WORLD_CENTER } from "../lib/mapConfig";
 
 export function AddRestaurant() {
   const navigate = useNavigate();
@@ -13,8 +12,8 @@ export function AddRestaurant() {
   const [cuisine, setCuisine] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
-  const [priceRange, setPriceRange] = useState(2);
-  const [position, setPosition] = useState<[number, number]>(LISBON);
+  const [avgPrice, setAvgPrice] = useState("");
+  const [position, setPosition] = useState<[number, number]>(WORLD_CENTER);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,7 +31,7 @@ export function AddRestaurant() {
         cuisine,
         address,
         city,
-        priceRange,
+        priceRange: avgPrice ? Number(avgPrice) : undefined,
         lat: position[0],
         lng: position[1],
         coverImage,
@@ -88,17 +87,19 @@ export function AddRestaurant() {
           className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
         />
         <div>
-          <label className="mb-1 block text-sm text-neutral-600">Price range</label>
-          <select
-            value={priceRange}
-            onChange={(e) => setPriceRange(Number(e.target.value))}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-          >
-            <option value={1}>$</option>
-            <option value={2}>$$</option>
-            <option value={3}>$$$</option>
-            <option value={4}>$$$$</option>
-          </select>
+          <label className="mb-1 block text-sm text-neutral-600">Average price per person (optional)</label>
+          <div className="relative w-40">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-neutral-400">$</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              placeholder="20"
+              value={avgPrice}
+              onChange={(e) => setAvgPrice(e.target.value)}
+              className="w-full rounded-md border border-neutral-300 py-2 pl-6 pr-3 text-sm focus:border-brand-500 focus:outline-none"
+            />
+          </div>
         </div>
         <div>
           <label className="mb-1 block text-sm text-neutral-600">Cover photo (optional)</label>

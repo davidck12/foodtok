@@ -27,7 +27,7 @@ async function main() {
       city: "Lisbon",
       lat: 38.7095,
       lng: -9.1366,
-      priceRange: 2,
+      priceRange: 18,
     },
     {
       name: "Time Out Market",
@@ -37,7 +37,7 @@ async function main() {
       city: "Lisbon",
       lat: 38.7069,
       lng: -9.1459,
-      priceRange: 2,
+      priceRange: 15,
     },
     {
       name: "Ramiro",
@@ -47,7 +47,7 @@ async function main() {
       city: "Lisbon",
       lat: 38.7225,
       lng: -9.1349,
-      priceRange: 3,
+      priceRange: 40,
     },
     {
       name: "Pastelaria Alfazema",
@@ -57,7 +57,7 @@ async function main() {
       city: "Lisbon",
       lat: 38.7118,
       lng: -9.1512,
-      priceRange: 1,
+      priceRange: 6,
     },
     {
       name: "Taberna da Rua das Flores",
@@ -67,7 +67,7 @@ async function main() {
       city: "Lisbon",
       lat: 38.7096,
       lng: -9.1443,
-      priceRange: 2,
+      priceRange: 30,
     },
     {
       name: "A Cevicheria",
@@ -77,7 +77,7 @@ async function main() {
       city: "Lisbon",
       lat: 38.7157,
       lng: -9.1479,
-      priceRange: 3,
+      priceRange: 35,
     },
   ];
 
@@ -85,7 +85,7 @@ async function main() {
     const owner = i % 2 === 0 ? alice : marco;
     const restaurant = await prisma.restaurant.upsert({
       where: { id: `seed-restaurant-${i}` },
-      update: {},
+      update: r,
       create: { id: `seed-restaurant-${i}`, ...r, createdById: owner.id },
     });
 

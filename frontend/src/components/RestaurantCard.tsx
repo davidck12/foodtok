@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
+import { priceSymbol } from "../lib/price";
 import type { Restaurant } from "../types";
 import { StarRating } from "./StarRating";
-
-const PRICE_LABELS = ["", "$", "$$", "$$$", "$$$$"];
 
 export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   return (
@@ -20,7 +19,7 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
       <div className="flex flex-1 flex-col gap-1 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-neutral-900">{restaurant.name}</h3>
-          <span className="shrink-0 text-sm text-neutral-500">{PRICE_LABELS[restaurant.priceRange]}</span>
+          <span className="shrink-0 text-sm text-neutral-500">{priceSymbol(restaurant.priceRange)}</span>
         </div>
         <p className="text-sm text-neutral-500">
           {restaurant.cuisine} · {restaurant.city}
