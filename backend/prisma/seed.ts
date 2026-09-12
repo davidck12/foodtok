@@ -98,7 +98,7 @@ async function main() {
         userId: reviewer.id,
         rating: 4 + (i % 2),
         text: `Great find while exploring ${r.city}! The ${r.cuisine.toLowerCase()} here really stood out — would come back.`,
-        photos: "[]",
+        photos: [],
       },
     });
   }

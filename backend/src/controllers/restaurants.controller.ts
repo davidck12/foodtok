@@ -43,7 +43,7 @@ export async function getRestaurant(req: Request, res: Response) {
     return res.status(404).json({ error: "Restaurant not found" });
   }
 
-  const reviews = restaurant.reviews.map((r) => ({ ...r, photos: JSON.parse(r.photos) }));
+  const reviews = restaurant.reviews;
   const avgRating =
     reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
 

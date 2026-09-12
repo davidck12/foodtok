@@ -32,14 +32,14 @@ export async function createReview(req: Request, res: Response) {
     data: {
       rating: parsed.data.rating,
       text: parsed.data.text,
-      photos: JSON.stringify(parsed.data.photos ?? []),
+      photos: parsed.data.photos ?? [],
       restaurantId: restaurant.id,
       userId: req.user!.userId,
     },
     include: { user: { select: { id: true, name: true, avatarUrl: true } } },
   });
 
-  res.status(201).json({ review: { ...review, photos: JSON.parse(review.photos) } });
+  res.status(201).json({ review });
 }
 
 export async function deleteReview(req: Request, res: Response) {
@@ -60,5 +60,5 @@ export async function myReviews(req: Request, res: Response) {
     include: { restaurant: { select: { id: true, name: true, city: true, coverImage: true } } },
     orderBy: { createdAt: "desc" },
   });
-  res.json({ reviews: reviews.map((r) => ({ ...r, photos: JSON.parse(r.photos) })) });
+  res.json({ reviews });
 }
