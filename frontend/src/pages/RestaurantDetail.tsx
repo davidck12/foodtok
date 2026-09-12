@@ -29,14 +29,16 @@ export function RestaurantDetail() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!id) return;
+    if (!restaurant) return;
     setSubmitting(true);
     try {
       let photos: string[] = [];
       if (photoFile) {
         photos = [await uploadImage(photoFile)];
       }
-      await api.post(`/restaurants/${id}/reviews`, { rating, text, photos });
+      // Use the resolved restaurant id, not the URL param — a restaurant opened for
+      // the first time via a Google search result only gets a real id once fetched.
+      await api.post(`/restaurants/${restaurant.id}/reviews`, { rating, text, photos });
       setText("");
       setPhotoFile(null);
       queryClient.invalidateQueries({ queryKey: ["restaurant", id] });
@@ -137,6 +139,48 @@ export function RestaurantDetail() {
           </div>
         ))}
       </div>
+
+      {restaurant.googleReviews.length > 0 && (
+        <div className="mt-10">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-semibold text-neutral-900">
+              Google Reviews
+              {restaurant.googleRating != null && (
+                <span className="flex items-center gap-1 text-sm font-normal text-neutral-500">
+                  <StarRating value={restaurant.googleRating} size="sm" />
+                  {restaurant.googleRating.toFixed(1)} ({restaurant.googleReviewCount})
+                </span>
+              )}
+            </h2>
+            {restaurant.googleMapsUrl && (
+              <a
+                href={restaurant.googleMapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-brand-600 hover:underline"
+              >
+                View on Google Maps
+              </a>
+            )}
+          </div>
+          <div className="flex flex-col gap-4">
+            {restaurant.googleReviews.map((review, i) => (
+              <div key={i} className="rounded-xl border border-neutral-200 bg-white p-4">
+                <div className="flex items-center gap-2">
+                  {review.authorPhotoUrl && (
+                    <img src={review.authorPhotoUrl} alt="" className="h-8 w-8 rounded-full" referrerPolicy="no-referrer" />
+                  )}
+                  <span className="font-medium text-neutral-900">{review.authorName}</span>
+                  <StarRating value={review.rating} size="sm" />
+                </div>
+                {review.text && <p className="mt-2 text-sm text-neutral-700">{review.text}</p>}
+                <p className="mt-2 text-xs text-neutral-400">{review.relativeTime}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-neutral-400">Reviews provided by Google.</p>
+        </div>
+      )}
     </div>
   );
 }

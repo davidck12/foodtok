@@ -16,10 +16,21 @@ export interface Restaurant {
   lng: number;
   priceRange: number;
   coverImage: string | null;
-  createdById: string;
+  createdById?: string | null;
   createdAt: string;
   avgRating: number | null;
   reviewCount: number;
+  /** "google" means this card is a live Google Places preview not yet saved as a Foodtok restaurant. */
+  source: "local" | "google";
+}
+
+export interface GoogleReview {
+  authorName: string;
+  authorPhotoUrl: string | null;
+  rating: number;
+  text: string;
+  relativeTime: string;
+  publishTime: string;
 }
 
 export interface Review {
@@ -35,7 +46,11 @@ export interface Review {
 
 export interface RestaurantDetail extends Restaurant {
   reviews: Review[];
-  createdBy: { id: string; name: string };
+  createdBy: { id: string; name: string } | null;
+  googleReviews: GoogleReview[];
+  googleMapsUrl: string | null;
+  googleRating: number | null;
+  googleReviewCount: number | null;
 }
 
 export interface MyReview extends Review {

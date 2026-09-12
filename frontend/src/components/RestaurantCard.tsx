@@ -36,6 +36,9 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
           ) : (
             <span className="text-xs text-neutral-400">No reviews yet</span>
           )}
+          {restaurant.source === "google" && (
+            <span className="ml-auto text-xs text-neutral-400">via Google</span>
+          )}
         </div>
       </div>
     </Link>

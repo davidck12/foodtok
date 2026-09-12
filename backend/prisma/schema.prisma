@@ -31,10 +31,17 @@ model Restaurant {
   lng         Float
   priceRange  Int      @default(2)
   coverImage  String?
-  createdById String
-  createdBy   User     @relation("RestaurantOwner", fields: [createdById], references: [id])
+  createdById String?
+  createdBy   User?    @relation("RestaurantOwner", fields: [createdById], references: [id])
   reviews     Review[]
   createdAt   DateTime @default(now())
+
+  // Set once a restaurant is matched to a real-world Google Places entry.
+  // Lets us show live Google reviews and lets any restaurant on Earth become
+  // a first-class Foodtok restaurant the first time someone looks it up.
+  googlePlaceId    String?   @unique
+  googleRating     Float?
+  googleReviewCount Int?
 
   @@index([city])
   @@index([cuisine])
