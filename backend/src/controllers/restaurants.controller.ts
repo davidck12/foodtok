@@ -16,7 +16,7 @@ export async function listRestaurants(req: Request, res: Response) {
   const restaurants = await prisma.restaurant.findMany({
     where: {
       AND: [
-        q ? { name: { contains: q } } : {},
+        q ? { name: { contains: q, mode: "insensitive" } } : {},
         cuisine ? { cuisine: { equals: cuisine } } : {},
         city ? { city: { equals: city } } : {},
       ],
@@ -177,12 +177,32 @@ export async function suggestRestaurants(req: Request, res: Response) {
     return res.json({ suggestions: [] });
   }
 
-  const local = await prisma.restaurant.findMany({
-    where: { name: { contains: q } },
-    select: { id: true, name: true, cuisine: true, city: true, lat: true, lng: true, googlePlaceId: true },
+  const select = { id: true, name: true, cuisine: true, city: true, lat: true, lng: true, googlePlaceId: true } as const;
+
+  // Name matches are the most relevant result for what someone typed, so fetch those first;
+  // only fall back to matching on cuisine/city (e.g. typing "Lisbon" or "Peruvian") to fill
+  // out remaining slots, so a stray cuisine match never bumps an actual name match.
+  const nameMatches = await prisma.restaurant.findMany({
+    where: { name: { contains: q, mode: "insensitive" } },
+    select,
     orderBy: { name: "asc" },
     take: SUGGEST_LIMIT,
   });
+
+  let local = nameMatches;
+  if (local.length < SUGGEST_LIMIT) {
+    const excludeIds = local.map((r) => r.id);
+    const broaderMatches = await prisma.restaurant.findMany({
+      where: {
+        id: { notIn: excludeIds },
+        OR: [{ cuisine: { contains: q, mode: "insensitive" } }, { city: { contains: q, mode: "insensitive" } }],
+      },
+      select,
+      orderBy: { name: "asc" },
+      take: SUGGEST_LIMIT - local.length,
+    });
+    local = [...local, ...broaderMatches];
+  }
 
   const suggestions: RestaurantSuggestion[] = local.map((r) => ({
     id: r.id,

@@ -1,12 +1,11 @@
-import { GoogleLocationPicker } from "./GoogleLocationPicker";
-import { LeafletLocationPicker } from "./LeafletLocationPicker";
-import { HAS_GOOGLE_MAPS } from "../lib/mapConfig";
+import { lazy, Suspense, type ComponentProps } from "react";
 
-interface Props {
-  position: [number, number];
-  onChange: (position: [number, number]) => void;
-}
+const Impl = lazy(() => import("./LocationPickerImpl").then((m) => ({ default: m.LocationPicker })));
 
-export function LocationPicker(props: Props) {
-  return HAS_GOOGLE_MAPS ? <GoogleLocationPicker {...props} /> : <LeafletLocationPicker {...props} />;
+export function LocationPicker(props: ComponentProps<typeof Impl>) {
+  return (
+    <Suspense fallback={<div className="h-full w-full animate-pulse bg-neutral-100" />}>
+      <Impl {...props} />
+    </Suspense>
+  );
 }
