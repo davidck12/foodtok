@@ -1,8 +1,9 @@
 import { useRef } from "react";
-import { Map, Marker, NavigationControl, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
+import { Map, Marker, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE_URL, WORLD_ZOOM } from "../lib/mapConfig";
 import { BrandPin } from "./BrandPin";
+import { MapZoomControls } from "./MapZoomControls";
 
 interface Props {
   position: [number, number];
@@ -41,7 +42,7 @@ export function LocationPicker({ position, onChange }: Props) {
       onLoad={handleLoad}
       cursor="crosshair"
     >
-      <NavigationControl position="top-left" showCompass={false} />
+      <MapZoomControls mapRef={mapRef} />
       <Marker longitude={position[1]} latitude={position[0]} anchor="bottom">
         <BrandPin active />
       </Marker>

@@ -16,13 +16,15 @@ const storage = multer.diskStorage({
   },
 });
 
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-
 export const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (!ALLOWED_TYPES.has(file.mimetype)) {
+    // A fixed whitelist (jpeg/png/webp/gif) rejected real photos with no explanation —
+    // iPhones default to HEIC ("image/heic") since iOS 11, and browsers keep adding new
+    // image mimetypes (avif, svg+xml, etc). Any image/* is a photo; only non-image uploads
+    // (pdf, video, etc.) are the actual thing worth blocking here.
+    if (!file.mimetype.startsWith("image/")) {
       return cb(new Error("Only image files are allowed"));
     }
     cb(null, true);

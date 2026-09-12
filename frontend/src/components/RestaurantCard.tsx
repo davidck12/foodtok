@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
+import { formatDistance } from "../lib/geo";
 import { priceSymbol } from "../lib/price";
 import type { Restaurant } from "../types";
 import { StarRating } from "./StarRating";
 
-export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
+export function RestaurantCard({ restaurant, distanceKm }: { restaurant: Restaurant; distanceKm?: number }) {
   const price = priceSymbol(restaurant.priceRange);
 
   return (
@@ -40,6 +41,7 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
         </div>
         <p className="text-sm text-neutral-500">
           {restaurant.cuisine} · {restaurant.city}
+          {distanceKm != null && <> · {formatDistance(distanceKm)} away</>}
         </p>
         <div className="mt-auto flex items-center gap-2 pt-2">
           {restaurant.avgRating ? (

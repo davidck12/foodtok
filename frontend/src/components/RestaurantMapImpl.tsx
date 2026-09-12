@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Map, Marker, NavigationControl, Popup, type MapRef } from "react-map-gl/maplibre";
+import { Map, Marker, Popup, type MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE_URL, WORLD_CENTER, WORLD_ZOOM } from "../lib/mapConfig";
 import { priceSymbol } from "../lib/price";
 import type { Restaurant } from "../types";
 import { BrandPin } from "./BrandPin";
+import { MapZoomControls } from "./MapZoomControls";
 import { StarRating } from "./StarRating";
 
 interface Props {
@@ -93,7 +94,7 @@ export function RestaurantMap({ restaurants, center, zoom, interactiveMarkers = 
       attributionControl={{ compact: true }}
       onLoad={handleLoad}
     >
-      <NavigationControl position="top-left" showCompass={false} />
+      <MapZoomControls mapRef={mapRef} />
       {restaurants.map((r) => (
         <Marker
           key={r.id}
