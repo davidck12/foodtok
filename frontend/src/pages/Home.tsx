@@ -68,7 +68,7 @@ export function Home() {
           </div>
         </div>
         <div className="h-[500px] overflow-hidden rounded-xl border border-neutral-200 lg:col-span-2 lg:h-auto">
-          {restaurants && <RestaurantMap restaurants={restaurants} zoom={12} />}
+          {restaurants && <RestaurantMap restaurants={restaurants} />}
         </div>
       </div>
     </div>

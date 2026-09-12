@@ -31,10 +31,14 @@ function FitToMarkers({ restaurants, skip }: { restaurants: Restaurant[]; skip: 
 
   useEffect(() => {
     if (skip || restaurants.length < 2) return;
-    map.fitBounds(
-      restaurants.map((r) => [r.lat, r.lng] as [number, number]),
-      { padding: [48, 48] },
-    );
+    const bounds = restaurants.map((r) => [r.lat, r.lng] as [number, number]);
+    // The container's real size isn't settled the instant this effect fires (it sits in a
+    // CSS grid column whose height depends on a sibling), so an immediate fitBounds can compute
+    // zoom against a stale/zero size. invalidateSize + a rAF defer fixes that reliably.
+    requestAnimationFrame(() => {
+      map.invalidateSize();
+      map.fitBounds(bounds, { padding: [48, 48] });
+    });
   }, [map, restaurants, skip]);
 
   return null;

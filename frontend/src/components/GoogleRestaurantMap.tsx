@@ -16,9 +16,11 @@ function FitToMarkers({ restaurants, skip }: { restaurants: Restaurant[]; skip: 
 
   useEffect(() => {
     if (skip || !map || restaurants.length < 2) return;
-    const bounds = new google.maps.LatLngBounds();
-    restaurants.forEach((r) => bounds.extend({ lat: r.lat, lng: r.lng }));
-    map.fitBounds(bounds, 48);
+    requestAnimationFrame(() => {
+      const bounds = new google.maps.LatLngBounds();
+      restaurants.forEach((r) => bounds.extend({ lat: r.lat, lng: r.lng }));
+      map.fitBounds(bounds, 48);
+    });
   }, [map, restaurants, skip]);
 
   return null;
