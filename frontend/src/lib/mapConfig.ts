@@ -14,5 +14,7 @@ export const WORLD_ZOOM = 1.6;
 
 // OpenFreeMap: genuinely free (no key, no signup, no rate limit) vector tiles rendered via
 // MapLibre GL — smooth zoom/pan, crisp at any DPI, modern styling much closer to Google/Apple
-// Maps than static raster tiles. https://openfreemap.org
-export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/bright";
+// Maps than static raster tiles. "liberty" (vs. the flatter "bright") adds 3D building
+// extrusions at street-level zoom, closer to how Google Maps renders cities.
+// https://openfreemap.org
+export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
