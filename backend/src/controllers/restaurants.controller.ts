@@ -159,6 +159,62 @@ export async function createRestaurant(req: Request, res: Response) {
   res.status(201).json({ restaurant });
 }
 
+const SUGGEST_LIMIT = 6;
+
+export interface RestaurantSuggestion {
+  id: string;
+  name: string;
+  cuisine: string;
+  city: string;
+  lat: number;
+  lng: number;
+  source: "local" | "google";
+}
+
+export async function suggestRestaurants(req: Request, res: Response) {
+  const q = (req.query.q as string | undefined)?.trim();
+  if (!q || q.length < 2) {
+    return res.json({ suggestions: [] });
+  }
+
+  const local = await prisma.restaurant.findMany({
+    where: { name: { contains: q } },
+    select: { id: true, name: true, cuisine: true, city: true, lat: true, lng: true, googlePlaceId: true },
+    orderBy: { name: "asc" },
+    take: SUGGEST_LIMIT,
+  });
+
+  const suggestions: RestaurantSuggestion[] = local.map((r) => ({
+    id: r.id,
+    name: r.name,
+    cuisine: r.cuisine,
+    city: r.city,
+    lat: r.lat,
+    lng: r.lng,
+    source: "local",
+  }));
+
+  if (suggestions.length < SUGGEST_LIMIT) {
+    const alreadyMatched = new Set(local.map((r) => r.googlePlaceId).filter(Boolean));
+    const results = await searchGooglePlaces(q);
+    for (const place of results) {
+      if (suggestions.length >= SUGGEST_LIMIT) break;
+      if (alreadyMatched.has(place.placeId)) continue;
+      suggestions.push({
+        id: `google:${place.placeId}`,
+        name: place.name,
+        cuisine: place.cuisine,
+        city: place.address,
+        lat: place.lat,
+        lng: place.lng,
+        source: "google",
+      });
+    }
+  }
+
+  res.json({ suggestions });
+}
+
 export async function listCuisines(_req: Request, res: Response) {
   const rows = await prisma.restaurant.findMany({
     select: { cuisine: true },

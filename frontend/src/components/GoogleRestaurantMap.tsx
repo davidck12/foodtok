@@ -1,5 +1,5 @@
 import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GOOGLE_MAPS_API_KEY, WORLD_CENTER, WORLD_ZOOM } from "../lib/mapConfig";
 import type { Restaurant } from "../types";
@@ -26,6 +26,26 @@ function FitToMarkers({ restaurants, skip }: { restaurants: Restaurant[]; skip: 
   return null;
 }
 
+// The Map component's `defaultCenter`/`defaultZoom` only apply at mount — this imperatively
+// pans the live map whenever the caller passes a new center in (e.g. a search suggestion pick).
+function FlyToCenter({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (!map) return;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    map.panTo({ lat: center[0], lng: center[1] });
+    map.setZoom(zoom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, center[0], center[1], zoom]);
+
+  return null;
+}
+
 export function GoogleRestaurantMap({ restaurants, center, zoom, interactiveMarkers = true }: Props) {
   const navigate = useNavigate();
   const single = restaurants.length === 1 ? restaurants[0] : null;
@@ -42,7 +62,11 @@ export function GoogleRestaurantMap({ restaurants, center, zoom, interactiveMark
         disableDefaultUI={false}
         mapId="foodtok-map"
       >
-        <FitToMarkers restaurants={restaurants} skip={Boolean(center)} />
+        {center ? (
+          <FlyToCenter center={center} zoom={defaultZoom} />
+        ) : (
+          <FitToMarkers restaurants={restaurants} skip={false} />
+        )}
         {restaurants.map((r) => (
           <Marker
             key={r.id}

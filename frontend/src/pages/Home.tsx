@@ -4,11 +4,16 @@ import { api } from "../api/client";
 import { RestaurantCard } from "../components/RestaurantCard";
 import { RestaurantCardSkeleton } from "../components/RestaurantCardSkeleton";
 import { RestaurantMap } from "../components/RestaurantMap";
-import type { Restaurant } from "../types";
+import { RestaurantSearchInput } from "../components/RestaurantSearchInput";
+import { useDebounce } from "../lib/useDebounce";
+import type { Restaurant, RestaurantSuggestion } from "../types";
 
 export function Home() {
   const [q, setQ] = useState("");
   const [cuisine, setCuisine] = useState("");
+  const [focus, setFocus] = useState<{ lat: number; lng: number } | null>(null);
+
+  const debouncedQ = useDebounce(q, 300);
 
   const { data: cuisines } = useQuery({
     queryKey: ["cuisines"],
@@ -16,14 +21,24 @@ export function Home() {
   });
 
   const { data: restaurants, isLoading } = useQuery({
-    queryKey: ["restaurants", q, cuisine],
+    queryKey: ["restaurants", debouncedQ, cuisine],
     queryFn: async () =>
       (
         await api.get<{ restaurants: Restaurant[] }>("/restaurants", {
-          params: { q: q || undefined, cuisine: cuisine || undefined },
+          params: { q: debouncedQ || undefined, cuisine: cuisine || undefined },
         })
       ).data.restaurants,
   });
+
+  function handleQueryChange(next: string) {
+    setQ(next);
+    setFocus(null);
+  }
+
+  function handleSuggestionSelect(suggestion: RestaurantSuggestion) {
+    setQ(suggestion.name);
+    setFocus({ lat: suggestion.lat, lng: suggestion.lng });
+  }
 
   return (
     <div>
@@ -48,28 +63,13 @@ export function Home() {
             Real reviews from tourists and locals — no algorithm, just good food.
           </p>
 
-          <div className="mx-auto mt-8 flex max-w-2xl flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-2 shadow-md sm:flex-row sm:items-center">
-            <div className="flex flex-1 items-center gap-2 px-2">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="shrink-0 text-neutral-400"
-              >
-                <circle cx="9" cy="9" r="6.5" />
-                <path d="M18 18l-4.5-4.5" strokeLinecap="round" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search restaurants by name…"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="w-full bg-transparent py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
-              />
-            </div>
+          <div className="relative z-10 mx-auto mt-8 flex max-w-2xl flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-2 shadow-md sm:flex-row sm:items-center">
+            <RestaurantSearchInput
+              value={q}
+              onChange={handleQueryChange}
+              onSelect={handleSuggestionSelect}
+              placeholder="Search restaurants by name…"
+            />
             <div className="hidden h-6 w-px bg-neutral-200 sm:block" />
             <select
               value={cuisine}
@@ -110,7 +110,13 @@ export function Home() {
             </div>
           </div>
           <div className="h-[420px] overflow-hidden rounded-2xl border border-neutral-200 shadow-sm lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)]">
-            {restaurants && <RestaurantMap restaurants={restaurants} />}
+            {restaurants && (
+              <RestaurantMap
+                restaurants={restaurants}
+                center={focus ? [focus.lat, focus.lng] : undefined}
+                zoom={focus ? 14 : undefined}
+              />
+            )}
           </div>
         </div>
       </div>

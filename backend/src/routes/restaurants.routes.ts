@@ -4,6 +4,7 @@ import {
   getRestaurant,
   listCuisines,
   listRestaurants,
+  suggestRestaurants,
 } from "../controllers/restaurants.controller";
 import { createReview } from "../controllers/reviews.controller";
 import { requireAuth } from "../middleware/auth";
@@ -12,6 +13,7 @@ const router = Router();
 
 router.get("/", listRestaurants);
 router.get("/cuisines", listCuisines);
+router.get("/suggest", suggestRestaurants);
 router.get("/:id", getRestaurant);
 router.post("/", requireAuth, createRestaurant);
 router.post("/:restaurantId/reviews", requireAuth, createReview);

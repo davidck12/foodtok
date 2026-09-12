@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { WORLD_CENTER, WORLD_ZOOM } from "../lib/mapConfig";
@@ -31,6 +31,25 @@ function FitToMarkers({ restaurants, skip }: { restaurants: Restaurant[]; skip: 
   return null;
 }
 
+// react-leaflet's `center`/`zoom` props on MapContainer only apply once, at mount — changing
+// them later (e.g. the user picks a search suggestion) does nothing on its own. This imperatively
+// flies the live map to a new center whenever the caller passes one in.
+function FlyToCenter({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    map.flyTo(center, zoom, { duration: 0.8 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center[0], center[1], zoom]);
+
+  return null;
+}
+
 export function LeafletRestaurantMap({ restaurants, center, zoom, interactiveMarkers = true }: Props) {
   const navigate = useNavigate();
   const single = restaurants.length === 1 ? restaurants[0] : null;
@@ -49,7 +68,7 @@ export function LeafletRestaurantMap({ restaurants, center, zoom, interactiveMar
         url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
         maxZoom={16}
       />
-      <FitToMarkers restaurants={restaurants} skip={Boolean(center)} />
+      {center ? <FlyToCenter center={center} zoom={mapZoom} /> : <FitToMarkers restaurants={restaurants} skip={false} />}
       {restaurants.map((r) => (
         <Marker
           key={r.id}

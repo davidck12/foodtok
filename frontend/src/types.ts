@@ -24,6 +24,16 @@ export interface Restaurant {
   source: "local" | "google";
 }
 
+export interface RestaurantSuggestion {
+  id: string;
+  name: string;
+  cuisine: string;
+  city: string;
+  lat: number;
+  lng: number;
+  source: "local" | "google";
+}
+
 export interface GoogleReview {
   authorName: string;
   authorPhotoUrl: string | null;
