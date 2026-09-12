@@ -1,0 +1,60 @@
+// Foodtok data model.
+// Using SQLite for zero-config local dev. To deploy on Postgres (Render/Railway/Supabase):
+//   1. Set provider = "postgresql" below
+//   2. Set DATABASE_URL to your Postgres connection string
+//   3. Change Review.photos from a JSON string to a native String[] (Postgres supports array columns)
+//   4. Run `npx prisma migrate dev`
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  password    String
+  name        String
+  avatarUrl   String?
+  createdAt   DateTime     @default(now())
+  restaurants Restaurant[] @relation("RestaurantOwner")
+  reviews     Review[]
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  cuisine     String
+  address     String
+  city        String
+  lat         Float
+  lng         Float
+  priceRange  Int      @default(2)
+  coverImage  String?
+  createdById String
+  createdBy   User     @relation("RestaurantOwner", fields: [createdById], references: [id])
+  reviews     Review[]
+  createdAt   DateTime @default(now())
+
+  @@index([city])
+  @@index([cuisine])
+}
+
+model Review {
+  id           String     @id @default(cuid())
+  rating       Int
+  text         String
+  photos       String     @default("[]")
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([restaurantId, userId])
+}

@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #fff4ed;
+  --color-brand-100: #ffe6d5;
+  --color-brand-200: #fec9aa;
+  --color-brand-300: #fda574;
+  --color-brand-400: #fb7229;
+  --color-brand-500: #f8500a;
+  --color-brand-600: #e93800;
+  --color-brand-700: #c12703;
+  --color-brand-800: #99210a;
+  --color-brand-900: #7b1e0b;
+}
+
+body {
+  @apply bg-neutral-50 text-neutral-900 antialiased;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
