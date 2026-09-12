@@ -2,6 +2,10 @@
 
 A full-stack food review platform for restaurants and local shops — built for tourists deciding where to eat abroad and locals looking for their next favorite spot.
 
+**Live**: https://frontend-seven-inky-82.vercel.app (frontend on Vercel) · API on Railway at `backend-production-e7ff.up.railway.app`
+
+Demo login (password: `password123`): `alice@foodtok.dev` or `marco@foodtok.dev`
+
 ## Features
 
 - Email/password auth with JWT sessions
@@ -21,8 +25,8 @@ A full-stack food review platform for restaurants and local shops — built for 
 | Data fetching | TanStack Query | Caching, refetching, and loading states without boilerplate |
 | Maps | Leaflet + react-leaflet + OpenStreetMap tiles | Free, no API key required, works out of the box |
 | Backend | Node.js + Express + TypeScript | Simple, well-understood REST API layer |
-| ORM | Prisma | Type-safe queries, easy migrations, easy to swap databases |
-| Database (dev) | SQLite | Zero-config local development, no server to install |
+| ORM | Prisma | Type-safe queries, easy migrations |
+| Database | PostgreSQL (Railway) | Same database for local dev and production — no schema drift |
 | Auth | JWT + bcrypt | Stateless, simple to reason about |
 | Uploads | Multer (local disk in dev) | Swappable for S3/Cloudinary later |
 | Validation | Zod | Shared-shape runtime validation on the API boundary |
@@ -62,13 +66,13 @@ This installs both workspaces (`backend` and `frontend`) from the root.
 
 ### Environment variables
 
-`backend/.env` is already created for local dev (SQLite + a dev JWT secret). `backend/.env.example` documents what's needed for other environments.
+`backend/.env` already points at the shared Railway Postgres instance used for both local dev and production, plus a dev JWT secret. `backend/.env.example` documents the shape for other environments.
 
-`frontend/.env` points the frontend at `http://localhost:4000` — adjust if you deploy the API elsewhere.
+`frontend/.env` points the frontend at `http://localhost:4000` for local dev — the deployed frontend instead has `VITE_API_URL` set on Vercel to the Railway backend URL.
 
 ### Database
 
-The SQLite database and migration already exist and are seeded. To reset it:
+Migrations and seed data already exist and have been applied. To reset:
 
 ```bash
 cd backend
@@ -96,13 +100,16 @@ npm run dev:frontend
 
 Open http://localhost:5173.
 
-## Deploying
+## Deployment
 
-This was built to deploy cheaply and painlessly:
+Already deployed and wired together:
 
-1. **Database**: create a free Postgres instance (Render, Railway, or Supabase all work). In `backend/prisma/schema.prisma`, change the datasource `provider` to `"postgresql"`, set `DATABASE_URL` to the connection string, and optionally change `Review.photos` from a JSON string to a native `String[]` (Postgres supports array columns; SQLite doesn't). Run `npx prisma migrate dev`.
-2. **Backend**: deploy `backend/` to Render/Railway/Fly.io as a Node service (`npm run build && npm start`). Set `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN` (your frontend URL), and `PORT` env vars. Swap the local-disk upload storage in `src/middleware/upload.ts` for an S3-compatible bucket if you want uploads to survive redeploys.
-3. **Frontend**: deploy `frontend/` to Vercel/Netlify (`npm run build`, publish `dist/`). Set `VITE_API_URL` to your deployed backend URL.
+- **Database + backend**: a Railway project (`athletic-benevolence`) with a Postgres service and a `backend` service. The backend service has its **Root Directory** set to `backend` (this is a monorepo), builds with `npm run build` (`prisma generate && tsc`), and starts with `npm run start` (`prisma migrate deploy && node dist/index.js`) so schema migrations apply automatically on every deploy. Env vars: `DATABASE_URL` (a variable reference to the Postgres service), `JWT_SECRET`, `CORS_ORIGIN` (the Vercel frontend URL), `NODE_ENV=production`. Public networking is enabled on both the Postgres service (so migrations can run from a local machine) and the backend (so the frontend can reach it).
+- **Frontend**: a Vercel project (`david-portfolio4/frontend`) connected to the same GitHub repo, root directory `frontend`, with `VITE_API_URL` set to the Railway backend's public URL. Pushing to `main` redeploys both automatically.
+
+To redeploy either side after further changes, just `git push` — both Railway and Vercel are connected to this repo's `main` branch and deploy on push. Uploaded review/restaurant photos are stored on the backend's local disk, which does **not** persist across redeploys — swap `backend/src/middleware/upload.ts` for an S3-compatible bucket before relying on this for real user uploads.
+
+To stand up a fresh copy elsewhere (e.g. Render/Supabase instead of Railway/Vercel), the steps are the same shape: provision Postgres, point `DATABASE_URL` at it, deploy `backend/` as a Node service with the build/start commands above, then deploy `frontend/` as a static build with `VITE_API_URL` pointed at that backend.
 
 ## Possible next steps
 
