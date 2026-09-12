@@ -1,23 +1,10 @@
-import L from "leaflet";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { WORLD_CENTER, WORLD_ZOOM } from "../lib/mapConfig";
+import { brandMarkerIcon } from "../lib/markerIcon";
+import { priceSymbol } from "../lib/price";
 import type { Restaurant } from "../types";
-
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
-const defaultIcon = L.icon({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
 
 interface Props {
   restaurants: Restaurant[];
@@ -54,23 +41,32 @@ export function LeafletRestaurantMap({ restaurants, center, zoom, interactiveMar
   return (
     <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom={false} className="h-full w-full">
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, OpenStreetMap contributors"
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+        maxZoom={16}
+      />
+      <TileLayer
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+        maxZoom={16}
       />
       <FitToMarkers restaurants={restaurants} skip={Boolean(center)} />
       {restaurants.map((r) => (
         <Marker
           key={r.id}
           position={[r.lat, r.lng]}
-          icon={defaultIcon}
+          icon={brandMarkerIcon}
           eventHandlers={
             interactiveMarkers ? { click: () => navigate(`/restaurants/${r.id}`) } : undefined
           }
         >
           <Popup>
-            <strong>{r.name}</strong>
-            <br />
-            {r.cuisine}
+            <div className="min-w-[140px]">
+              <p className="font-display text-sm font-semibold text-neutral-900">{r.name}</p>
+              <p className="mt-0.5 text-xs text-neutral-500">
+                {r.cuisine}
+                {r.priceRange > 0 && ` · ${priceSymbol(r.priceRange)}`}
+              </p>
+            </div>
           </Popup>
         </Marker>
       ))}

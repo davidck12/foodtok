@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { Footer } from "./components/Footer";
 import { NavBar } from "./components/NavBar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AddRestaurant } from "./pages/AddRestaurant";
@@ -11,7 +12,7 @@ import { RestaurantDetail } from "./pages/RestaurantDetail";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="flex min-h-screen flex-col bg-neutral-50">
       <Toaster position="top-center" />
       <NavBar />
       <Routes>
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
+      <Footer />
     </div>
   );
 }

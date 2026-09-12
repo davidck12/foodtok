@@ -5,6 +5,9 @@ import { api, uploadImage } from "../api/client";
 import { LocationPicker } from "../components/LocationPicker";
 import { WORLD_CENTER } from "../lib/mapConfig";
 
+const inputClass =
+  "rounded-lg border border-neutral-300 px-3.5 py-2.5 text-sm placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500";
+
 export function AddRestaurant() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -46,77 +49,109 @@ export function AddRestaurant() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">Add a restaurant or shop</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+      <div className="mb-6">
+        <h1 className="font-display text-2xl font-bold text-neutral-900">Add a restaurant or shop</h1>
+        <p className="mt-1 text-sm text-neutral-500">Help tourists and locals discover somewhere great.</p>
+      </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 rounded-2xl border border-neutral-200 bg-white p-6 shadow-card">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <input
-            required
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-          />
-          <input
-            required
-            placeholder="Cuisine (e.g. Portuguese)"
-            value={cuisine}
-            onChange={(e) => setCuisine(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-          />
-          <input
-            required
-            placeholder="Street address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-          />
-          <input
-            required
-            placeholder="City"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-          />
-        </div>
-        <textarea
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-        />
-        <div>
-          <label className="mb-1 block text-sm text-neutral-600">Average price per person (optional)</label>
-          <div className="relative w-40">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-neutral-400">$</span>
+          <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+            Name
             <input
-              type="number"
-              min={1}
-              step={1}
-              placeholder="20"
-              value={avgPrice}
-              onChange={(e) => setAvgPrice(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 py-2 pl-6 pr-3 text-sm focus:border-brand-500 focus:outline-none"
+              required
+              placeholder="e.g. Cantina do Porto"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputClass}
             />
-          </div>
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-neutral-600">Cover photo (optional)</label>
-          <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} className="text-sm" />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-neutral-600">
-            Click the map to set the location ({position[0].toFixed(4)}, {position[1].toFixed(4)})
           </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+            Cuisine
+            <input
+              required
+              placeholder="e.g. Portuguese"
+              value={cuisine}
+              onChange={(e) => setCuisine(e.target.value)}
+              className={inputClass}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+            Street address
+            <input
+              required
+              placeholder="e.g. Rua da Alfândega 12"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className={inputClass}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+            City
+            <input
+              required
+              placeholder="e.g. Lisbon"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className={inputClass}
+            />
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+          Description <span className="font-normal text-neutral-400">(optional)</span>
+          <textarea
+            placeholder="What makes this place worth visiting?"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className={inputClass}
+          />
+        </label>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+            Average price per person <span className="font-normal text-neutral-400">(optional)</span>
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-neutral-400">$</span>
+              <input
+                type="number"
+                min={1}
+                step={1}
+                placeholder="20"
+                value={avgPrice}
+                onChange={(e) => setAvgPrice(e.target.value)}
+                className={`${inputClass} w-full pl-7`}
+              />
+            </div>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+            Cover photo <span className="font-normal text-neutral-400">(optional)</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+              className="mt-0.5 text-sm text-neutral-500 file:mr-3 file:rounded-full file:border-0 file:bg-neutral-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-neutral-700 hover:file:bg-neutral-200"
+            />
+          </label>
+        </div>
+
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-neutral-700">
+            Location{" "}
+            <span className="font-normal text-neutral-400">
+              — click the map ({position[0].toFixed(4)}, {position[1].toFixed(4)})
+            </span>
+          </p>
           <div className="h-72 overflow-hidden rounded-xl border border-neutral-200">
             <LocationPicker position={position} onChange={setPosition} />
           </div>
         </div>
+
         <button
           type="submit"
           disabled={submitting}
-          className="mt-2 rounded-md bg-brand-500 px-4 py-2 font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+          className="mt-1 rounded-full bg-brand-500 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
         >
           {submitting ? "Adding…" : "Add restaurant"}
         </button>
