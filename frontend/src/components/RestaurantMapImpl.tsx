@@ -20,6 +20,7 @@ export function RestaurantMap({ restaurants, center, zoom, interactiveMarkers = 
   const navigate = useNavigate();
   const mapRef = useRef<MapRef>(null);
   const [selected, setSelected] = useState<Restaurant | null>(null);
+  const [ready, setReady] = useState(false);
   const isFirstRender = useRef(true);
 
   const single = restaurants.length === 1 ? restaurants[0] : null;
@@ -29,13 +30,19 @@ export function RestaurantMap({ restaurants, center, zoom, interactiveMarkers = 
   // Frames the map to whatever `center`/`restaurants` currently describe. Used both for the
   // initial load (instant, no animation — the guessed initialViewState above is a rough
   // placeholder) and for later prop changes (animated), so the two paths can't drift apart.
+  //
+  // The instant path uses `jumpTo`, not `flyTo`/`easeTo` with `duration: 0` — flyTo runs its
+  // camera-flight curve math even at duration 0, and on a fresh map instance that can leave
+  // the render loop never scheduling a first frame: the style loads (attribution, sprites)
+  // but no tile ever gets requested and the canvas stays permanently blank. jumpTo sets the
+  // camera synchronously with no animation math at all, sidestepping that path entirely.
   function applyView(animate: boolean) {
     const map = mapRef.current?.getMap();
     if (!map) return;
-    const opts = animate ? { duration: 900 } : { duration: 0 };
 
     if (center) {
-      map.flyTo({ center: [center[1], center[0]], zoom: zoom ?? 14, ...opts });
+      const target = { center: [center[1], center[0]] as [number, number], zoom: zoom ?? 14 };
+      animate ? map.flyTo({ ...target, duration: 900 }) : map.jumpTo(target);
     } else if (restaurants.length >= 2) {
       const lngs = restaurants.map((r) => r.lng);
       const lats = restaurants.map((r) => r.lat);
@@ -44,12 +51,14 @@ export function RestaurantMap({ restaurants, center, zoom, interactiveMarkers = 
           [Math.min(...lngs), Math.min(...lats)],
           [Math.max(...lngs), Math.max(...lats)],
         ],
-        { padding: 56, maxZoom: 15, ...opts },
+        { padding: 56, maxZoom: 15, duration: animate ? 900 : 0 },
       );
     } else if (restaurants.length === 1) {
-      map.flyTo({ center: [restaurants[0].lng, restaurants[0].lat], zoom: 15, ...opts });
+      const target = { center: [restaurants[0].lng, restaurants[0].lat] as [number, number], zoom: 15 };
+      animate ? map.flyTo({ ...target, duration: 900 }) : map.jumpTo(target);
     } else {
-      map.flyTo({ center: [WORLD_CENTER[1], WORLD_CENTER[0]], zoom: WORLD_ZOOM, ...opts });
+      const target = { center: [WORLD_CENTER[1], WORLD_CENTER[0]] as [number, number], zoom: WORLD_ZOOM };
+      animate ? map.flyTo({ ...target, duration: 900 }) : map.jumpTo(target);
     }
   }
 
@@ -79,6 +88,10 @@ export function RestaurantMap({ restaurants, center, zoom, interactiveMarkers = 
     // until something else (a click, a resize) nudges it — leaving a loaded-but-blank canvas.
     // An explicit repaint request on the next frame guarantees that first paint happens.
     requestAnimationFrame(() => map.triggerRepaint());
+    // 'load' only means the style parsed — tiles for the current view can still be in flight.
+    // 'idle' fires once everything currently needed has actually finished rendering, which is
+    // the honest signal for "stop showing a loading state".
+    map.once("idle", () => setReady(true));
     const container = map.getContainer();
     const observer = new ResizeObserver(() => map.resize());
     observer.observe(container);
@@ -94,6 +107,18 @@ export function RestaurantMap({ restaurants, center, zoom, interactiveMarkers = 
       attributionControl={{ compact: true }}
       onLoad={handleLoad}
     >
+      <div
+        aria-hidden={ready}
+        className={`pointer-events-none absolute inset-0 z-10 flex items-center justify-center gap-2 bg-neutral-100 text-xs font-medium text-neutral-400 transition-opacity duration-300 ${
+          ready ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <svg width="14" height="14" viewBox="0 0 20 20" className="animate-spin" fill="none">
+          <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="2" strokeOpacity="0.25" />
+          <path d="M17.5 10a7.5 7.5 0 0 0-7.5-7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        Loading map…
+      </div>
       <MapZoomControls mapRef={mapRef} />
       {restaurants.map((r) => (
         <Marker
