@@ -13,8 +13,10 @@ export const WORLD_CENTER: [number, number] = [20, 0];
 export const WORLD_ZOOM = 1.6;
 
 // OpenFreeMap: genuinely free (no key, no signup, no rate limit) vector tiles rendered via
-// MapLibre GL — smooth zoom/pan, crisp at any DPI, modern styling much closer to Google/Apple
-// Maps than static raster tiles. "liberty" (vs. the flatter "bright") adds 3D building
-// extrusions at street-level zoom, closer to how Google Maps renders cities.
+// MapLibre GL — smooth zoom/pan, crisp at any DPI. "liberty"/"bright" paint land and water in
+// saturated greens/yellows/blues, which reads as busy and cartoonish next to the rest of the
+// app's restrained palette. "positron" is a near-monochrome light-gray basemap (the same
+// visual language Stripe/Airbnb-style map UIs use) — it recedes instead of competing, so the
+// single brand-orange pin reads as the one accent color instead of fighting the map for it.
 // https://openfreemap.org
-export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
