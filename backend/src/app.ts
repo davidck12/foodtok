@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import path from "path";
 import authRoutes from "./routes/auth.routes";
 import restaurantRoutes from "./routes/restaurants.routes";
@@ -8,6 +9,17 @@ import uploadRoutes from "./routes/upload.routes";
 
 export function createApp() {
   const app = express();
+
+  app.use(
+    helmet({
+      // This API serves no HTML of its own, and cover/review photos are fetched
+      // cross-origin by the Vercel frontend (uploadImage() builds an absolute URL to this
+      // server) — helmet's default same-origin resource policy and CSP are built for
+      // HTML-serving apps and would silently break those image loads.
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    }),
+  );
 
   // Vercel gives every deployment its own unique URL (per-branch, per-preview, plus the
   // project's default alias) on top of whatever custom domain is configured — a single

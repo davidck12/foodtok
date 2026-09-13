@@ -15,6 +15,7 @@ const RestaurantDetail = lazy(() =>
   import("./pages/RestaurantDetail").then((m) => ({ default: m.RestaurantDetail })),
 );
 const Profile = lazy(() => import("./pages/Profile").then((m) => ({ default: m.Profile })));
+const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/restaurants/new" element={<ProtectedRoute><AddRestaurant /></ProtectedRoute>} />
           <Route path="/restaurants/:id" element={<RestaurantDetail />} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
       <Footer />

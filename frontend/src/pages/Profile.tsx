@@ -16,6 +16,7 @@ export function Profile() {
   });
 
   async function handleDelete(id: string) {
+    if (!window.confirm("Delete this review? This can't be undone.")) return;
     try {
       await api.delete(`/reviews/${id}`);
       queryClient.invalidateQueries({ queryKey: ["myReviews"] });
