@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Map, Marker, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE_URL, WORLD_ZOOM } from "../lib/mapConfig";
@@ -12,10 +12,29 @@ interface Props {
 
 export function LocationPicker({ position, onChange }: Props) {
   const mapRef = useRef<MapRef>(null);
+  const isFirstRender = useRef(true);
+  const fromClick = useRef(false);
 
   function handleClick(e: MapLayerMouseEvent) {
+    fromClick.current = true;
     onChange([e.lngLat.lat, e.lngLat.lng]);
   }
+
+  // A click already visually centers itself where the user tapped — only fly the camera
+  // for position changes from elsewhere (e.g. the parent defaulting to the user's real
+  // location once geolocation resolves after mount).
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (fromClick.current) {
+      fromClick.current = false;
+      return;
+    }
+    mapRef.current?.getMap().flyTo({ center: [position[1], position[0]], zoom: 15, duration: 900 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [position[0], position[1]]);
 
   // See RestaurantMapImpl for why this is needed — the container isn't reliably sized yet
   // the instant the map mounts behind a Suspense boundary.

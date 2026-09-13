@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api, uploadImage } from "../api/client";
@@ -19,6 +19,20 @@ export function AddRestaurant() {
   const [position, setPosition] = useState<[number, number]>(WORLD_CENTER);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const pinMovedRef = useRef(false);
+
+  // Most people adding a place are standing near it — try to start the picker there instead
+  // of a blank world view, but only if they haven't already clicked the map themselves.
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (!pinMovedRef.current) setPosition([pos.coords.latitude, pos.coords.longitude]);
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 10_000 },
+    );
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -144,7 +158,13 @@ export function AddRestaurant() {
             </span>
           </p>
           <div className="h-72 overflow-hidden rounded-xl border border-neutral-200">
-            <LocationPicker position={position} onChange={setPosition} />
+            <LocationPicker
+              position={position}
+              onChange={(next) => {
+                pinMovedRef.current = true;
+                setPosition(next);
+              }}
+            />
           </div>
         </div>
 
